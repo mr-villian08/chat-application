@@ -27,6 +27,7 @@ class ChatController
     public function show()
     {
         $query = Database::query("SELECT * FROM chats INNER JOIN users ON users.id = chats.user_id ORDER BY chats.created_at DESC");
-        return $query->fetch_assoc();
+
+        return $query->fetch_all(MYSQLI_ASSOC);
     }
 }

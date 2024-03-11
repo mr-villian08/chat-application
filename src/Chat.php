@@ -5,6 +5,9 @@ namespace MyApp;
 use Ratchet\MessageComponentInterface;
 use Ratchet\ConnectionInterface;
 
+require dirname(__DIR__) . '../config/DB.php';
+require dirname(__DIR__) . '../Controllers/UserController.php';
+
 class Chat implements MessageComponentInterface
 {
     protected $clients;
@@ -33,11 +36,27 @@ class Chat implements MessageComponentInterface
             $numRecv == 1 ? '' : 's'
         );
 
+        $data = json_decode($msg, true);
+        \Database::connect();
+        $message = $data['message'];
+        $userId = $data['user_id'];
+        \Database::query("INSERT INTO chats (message, user_id, created_at, updated_at) VALUES ('$message', $userId, NOW(), NOW())");
+        $user = new \UserController(\Database::connect());
+        $userData = $user->find($data['user_id']);
+        $username = $userData->username;
+        $created_at = date("d-m-Y h:i:s");
+
         foreach ($this->clients as $client) {
-            if ($from !== $client) {
-                // The sender is not the receiver, send to each client connected
-                $client->send($msg);
+
+            if ($from == $client) {
+                $data['from'] = 'Me';
+                $data['created_at'] = $created_at;
+            } else {
+                $data['created_at'] = $created_at;
+                $data['from'] = $username;
             }
+
+            $client->send(json_encode($data));
         }
     }
 

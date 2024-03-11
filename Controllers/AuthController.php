@@ -35,6 +35,7 @@ class AuthController
     // ? ********************************************************** Login the user ********************************************************** */
     public function login($email, $password): array
     {
+
         Database::connect();
         $errors = $this->loginValidation($email, $password);
         if (count($errors) != 0) {
@@ -122,7 +123,7 @@ class AuthController
             if ($result->num_rows === 0) {
                 return $this->errors =  array_merge($this->errors, ["logout" => 'Unable to logout. Try again!']);
             }
-            
+
             Database::disconnect();
             session_destroy();
             return header('location: ./auth/register.php');
